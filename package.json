@@ -1,0 +1,24 @@
+{
+  "name": "com.iim.lib",
+  "version": "0.0.1",
+  "displayName": "IIMLib",
+  "unity": "2022.1",
+  "unityRelease": "0b5",
+  "documentationUrl": "https://example.com/",
+  "changelogUrl": "https://example.com/changelog.html",
+  "licensesUrl": "https://example.com/licensing.html",
+  "keywords": [
+    "keyword1",
+    "keyword2",
+    "keyword3"
+  ],
+  "author": {
+    "name": "IIM",
+    "email": "itismarcii@itismarcii-dev.com",
+    "url": ""
+  },
+  "dependencies": {
+    "com.unity.addressables": "1.22.3",
+    "com.unity.textmeshpro": "3.0.7"
+  }
+}
