@@ -38,7 +38,7 @@ namespace IIMLib.Boot.Editor
         /// <summary>
         /// Determine where the Addressable Assets Data path is set if there is no setting available
         /// </summary>
-        private const string ADDRESSABLE_SETTINGS_PATH = "Assets/Boot/AddressableAssetsData";
+        private const string ADDRESSABLE_SETTINGS_PATH = "Assets/AddressableAssetsData";
 
 
         /// <summary>
@@ -181,14 +181,14 @@ namespace IIMLib.Boot.Editor
             {
                 settings = AddressableAssetSettings.Create(ADDRESSABLE_SETTINGS_PATH, "AddressableAssetSettings", true, true);
                 AddressableAssetSettingsDefaultObject.Settings = settings;
-
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
 
             // Try to find existing group
             var group = settings.FindGroup(name);
-            if (group != null) return group;
+            if (group != null)
+                return group;
 
             // Create new group
             group = settings.CreateGroup(name, false, false, true, settings.DefaultGroup.Schemas);
