@@ -35,6 +35,11 @@ namespace IIMLib.Boot.Editor
         /// <returns></returns>
         internal static bool IsAvailable => File.Exists(PROJECT_SETTINGS_PATH);
 
+        /// <summary>
+        /// Determine where the Addressable Assets Data path is set if there is no setting available
+        /// </summary>
+        private const string ADDRESSABLE_SETTINGS_PATH = "Assets/AddressableAssetsData";
+
 
         /// <summary>
         /// Retrieve the settings object if it exists, otherwise create and return it.
@@ -170,10 +175,22 @@ namespace IIMLib.Boot.Editor
         /// <returns></returns>
         private static AddressableAssetGroup GetOrCreateGroup(string name, bool includeInBuild)
         {
+            // Ensure Addressable settings exist
             var settings = AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+            {
+                settings = AddressableAssetSettings.Create(ADDRESSABLE_SETTINGS_PATH, "AddressableAssetSettings", true, true);
+                AddressableAssetSettingsDefaultObject.Settings = settings;
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            // Try to find existing group
             var group = settings.FindGroup(name);
-            if (group != null) return group;
-            
+            if (group != null)
+                return group;
+
+            // Create new group
             group = settings.CreateGroup(name, false, false, true, settings.DefaultGroup.Schemas);
             group.GetSchema<BundledAssetGroupSchema>().IncludeInBuild = includeInBuild;
 
