@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using IIMLib.Core;
 
-namespace Extension.TypeHierarchy
+namespace IIMLib.Extension.TypeHierarchy
 {
     public static class TypeHierarchyCache
     {

@@ -1,5 +1,5 @@
 ﻿using System;
-using Extension.TypeHierarchy;
+using IIMLib.Extension.TypeHierarchy;
 
 namespace IIMLib.Core.Module
 {

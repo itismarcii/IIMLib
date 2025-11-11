@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Extension.TypeHierarchy;
+using IIMLib.Extension.TypeHierarchy;
 
 namespace IIMLib.Core.Module
 {
