@@ -16,22 +16,25 @@ namespace IIMLib.Loop
 
         private void Awake()
         {
-            Initialize();
+            if (IsInvalidDestroyedSingleton()) return;
             OnAwake();
         }
 
         public void Initialize()
         {
-            if (Instance != null && Instance != this)
-            {
-                Debug.LogWarning($"{gameObject.name} is already instantiated. {gameObject} destroyed.");
-                Destroy(gameObject);
-                return;
-            }
+            if (IsInvalidDestroyedSingleton()) return;
 
             Instance = this;
             DontDestroyOnLoad(gameObject); 
             Init();
+        }
+
+        private bool IsInvalidDestroyedSingleton()
+        {
+            if (Instance == null || Instance == this) return false;
+            Debug.LogWarning($"{gameObject.name} is already instantiated. {gameObject} destroyed.");
+            Destroy(gameObject);
+            return true;
         }
 
         protected virtual void Init()
