@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-
-namespace IIMLib.Core.Module
+﻿namespace IIMLib.Core.Module
 {
     public interface IModule
     {
-        public GameObject Owner { get; set; }
-        public void OnRemove();
+        public IModuleHolder Owner { get; set; }
+        public virtual void OnRemove(){}
     }
 }

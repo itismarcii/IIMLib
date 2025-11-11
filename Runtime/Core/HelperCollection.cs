@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace IIMLib.Core
@@ -144,6 +145,28 @@ namespace IIMLib.Core
         public static bool ValidateList<T>(List<T> list, int minCount = 1)
         {
             return list != null && list.Count >= minCount;
+        }
+        
+        /// <summary>
+        /// Collection of helper functions using reflection.
+        /// </summary>
+        public static class Reflection
+        {
+            /// <summary>
+            /// Safely retrieves all loadable types from the given assembly,
+            /// filtering out nulls if a ReflectionTypeLoadException occurs.
+            /// </summary>
+            public static IEnumerable<Type> SafeGetTypes(Assembly assembly)
+            {
+                try
+                {
+                    return assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException  e)
+                {
+                    return e.Types.Where(t => t != null);
+                }
+            }
         }
     }
 }
