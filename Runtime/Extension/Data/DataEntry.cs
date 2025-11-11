@@ -1,4 +1,4 @@
-﻿namespace Extension.Data
+﻿namespace IIMLib.Extension.Data
 {
     public abstract class DataEntry
     {

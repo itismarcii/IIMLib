@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Extension.Data
+namespace IIMLib.Extension.Data
 {
     public class DataLibrary
     {
