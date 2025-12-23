@@ -5,21 +5,22 @@ namespace IIMLib.Extension.Data
 {
     public class DataLibrary
     {
-        private readonly Dictionary<Type, DataEntry> _DataEntries = new();
+        private readonly Dictionary<Type, IDataEntry> _DataEntries = new();
         
-        public T Get<T>() where T : DataEntry => (T)_DataEntries[typeof(T)];
-        public T GetOrDefault<T>() where T : DataEntry, new() => _DataEntries.TryGetValue(typeof(T), out var entry) ? entry as T : new T();
+        public T Get<T>() where T : DataEntry<T> => (T)_DataEntries[typeof(T)].CloneUntyped();
+        public T GetOrigin<T>() where T : DataEntry<T> => (T)_DataEntries[typeof(T)];
+        public T GetOrDefault<T>() where T : DataEntry<T>, new() => _DataEntries.TryGetValue(typeof(T), out var entry) ? entry as T : new T();
         public void ClearAll() =>  _DataEntries.Clear();
-        public void Clear<T>() where T : DataEntry, new() => _DataEntries.Remove(typeof(T));
-        public T GetCleanData<T>() where T : DataEntry, new() => GetOrDefault<T>().CreateCleanDataEntry() as T;
+        public void Clear<T>() where T : DataEntry<T>, new() => _DataEntries.Remove(typeof(T));
+        public T GetCleanData<T>() where T : DataEntry<T>, new() => GetOrDefault<T>().CreateCleanDataEntry() as T;
 
-        public T Update<T>(T data) where T : DataEntry, new()
+        public T Update<T>(T data) where T : DataEntry<T>, new()
         {
             if (data == null) return null;
 
             if (_DataEntries.TryGetValue(typeof(T), out var entry))
             {
-                entry.Merge(data);
+                ((T)entry).Merge(data);
                 return Get<T>();
             }
 
@@ -34,7 +35,7 @@ namespace IIMLib.Extension.Data
             foreach (var (key, data) in library._DataEntries)
             {
                 if(!_DataEntries.TryGetValue(key, out var entry)) continue;
-                entry.Merge(data);
+                entry.MergeFrom(data);
             }
         }
 
@@ -44,7 +45,7 @@ namespace IIMLib.Extension.Data
 
             foreach (var (key, data) in _DataEntries)
             {
-                library._DataEntries[key] = data.Clone();
+                library._DataEntries[key] = data.CloneUntyped();
             }
 
             return library;
