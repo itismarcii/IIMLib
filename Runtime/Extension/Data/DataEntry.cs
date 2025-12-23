@@ -5,8 +5,8 @@ namespace IIMLib.Extension.Data
     public abstract class DataEntry<T> : IDataEntry where T : DataEntry<T>
     {
         public abstract void Merge(T data);
-        public abstract DataEntry<T> CreateCleanDataEntry();
-        public abstract DataEntry<T> Clone();
+        public abstract T CreateCleanDataEntry();
+        public abstract T Clone();
 
         void IDataEntry.MergeFrom(IDataEntry entry)
         {
