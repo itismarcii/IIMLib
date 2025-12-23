@@ -112,6 +112,41 @@ namespace IIMLib.Extension.Data
             
             return Get<T>();
         }
+
+        /// <summary>
+        /// Replaces the stored data entry of type <typeparamref name="T"/> with the provided data.
+        /// </summary>
+        /// <remarks>
+        /// This method performs a full replacement of the existing data entry rather than
+        /// applying a partial update.
+        /// <para/>
+        /// Unlike <see cref="Update{T}(T)"/>, which merges non-null intent into the current
+        /// state, <c>Override</c> discards any previously stored state and replaces it with
+        /// a new instance initialized from <paramref name="data"/>.
+        /// <para/>
+        /// Fields that are not explicitly set in <paramref name="data"/> will remain unset
+        /// in the resulting entry, allowing this method to be used to reset values back to
+        /// their null state.</remarks>
+        /// <typeparam name="T">The concrete data entry type.</typeparam>
+        /// <param name="data">
+        /// The data entry describing the new authoritative state.
+        /// </param>
+        /// <returns>
+        /// A cloned snapshot of the overridden data entry.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="data"/> is <c>null</c>.
+        /// </exception>
+        public T Override<T>(T data) where T : DataEntry<T>, new()
+        {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
+            var instance = new T();
+            instance.Merge(data);
+            _DataEntries[typeof(T)] = instance;
+
+            return Get<T>();
+        }
         
         /// <summary>
         /// Merges all compatible data entries from another <see cref="DataLibrary"/> into this one.
