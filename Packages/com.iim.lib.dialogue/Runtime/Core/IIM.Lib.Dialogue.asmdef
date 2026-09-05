@@ -1,0 +1,16 @@
+{
+  "name": "IIM.Lib.Dialogue",
+  "rootNamespace": "IIMLib.Dialogue",
+  "references": [
+    "IIM.Lib.Core"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

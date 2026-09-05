@@ -1,0 +1,19 @@
+{
+  "name": "IIM.Lib.Dialogue.Editor",
+  "rootNamespace": "IIMLib.Dialogue.Editor",
+  "references": [
+    "IIM.Lib.Dialogue",
+    "IIM.Lib.Dialogue.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

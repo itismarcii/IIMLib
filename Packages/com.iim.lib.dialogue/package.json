@@ -2,23 +2,30 @@
   "name": "com.iim.lib.dialogue",
   "version": "0.0.1",
   "displayName": "IIMLib Dialogue",
-  "description": "Optional dialogue system for IIMLib.",
+  "description": "Optional dialogue parsing, text resolution, dialogue models and authoring assets for IIMLib.",
   "unity": "2022.3",
-  "documentationUrl": "https://github.com/itismarcii/IIMLib/tree/develop/monorepo/Packages/com.iim.lib.dialogue",
-  "changelogUrl": "https://github.com/itismarcii/IIMLib/blob/develop/monorepo/Packages/com.iim.lib.dialogue/CHANGELOG.md",
-  "dependencies": {
-    "com.iim.lib": "0.1.0"
-  },
+  "documentationUrl": "https://github.com/itismarcii/IIMLib/tree/develop/dialogue_system/Packages/com.iim.lib.dialogue/Documentation~",
+  "changelogUrl": "https://github.com/itismarcii/IIMLib/blob/develop/dialogue_system/Packages/com.iim.lib.dialogue/CHANGELOG.md",
   "keywords": [
     "iim",
     "dialogue",
     "conversation",
     "narrative",
-    "logic",
-    "textexectution"
+    "branching-dialogue"
   ],
   "author": {
     "name": "IIM",
+    "email": "itismarcii@itismarcii-dev.com",
     "url": "https://github.com/itismarcii"
-  }
+  },
+  "dependencies": {
+    "com.iim.lib": "0.0.1"
+  },
+  "samples": [
+    {
+      "displayName": "Basic Dialogue",
+      "description": "Small example showing DialogueService, functions and identifier resolution.",
+      "path": "Samples~/BasicDialogue"
+    }
+  ]
 }

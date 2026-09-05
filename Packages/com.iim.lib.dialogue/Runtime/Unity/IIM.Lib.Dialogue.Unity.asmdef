@@ -1,0 +1,17 @@
+{
+  "name": "IIM.Lib.Dialogue.Unity",
+  "rootNamespace": "IIMLib.Dialogue",
+  "references": [
+    "IIM.Lib.Dialogue",
+    "IIM.Lib.Core"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
