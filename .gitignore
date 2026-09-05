@@ -73,3 +73,5 @@ crashlytics-build.properties
 
 # Rider .idea folder
 .idea/
+Packages/manifest.json
+Packages/packages-lock.json
