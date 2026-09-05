@@ -1,6 +1,8 @@
-﻿using IIMLib.Core;
+using IIMLib.Core.Message;
 
 namespace IIMLib.Loop.Message
 {
-    public struct OnLoadFinishedMessage : IMessage { }
+    public readonly struct OnLoadFinishedMessage : IMessage
+    {
+    }
 }

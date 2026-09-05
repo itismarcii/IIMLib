@@ -1,9 +1,9 @@
-﻿namespace IIMLib.Loop
+namespace IIMLib.Loop
 {
     public enum GameLoopType
     {
         UPDATE,
         FIXED_UPDATE,
-        LATE_UPDATE,
+        LATE_UPDATE
     }
 }

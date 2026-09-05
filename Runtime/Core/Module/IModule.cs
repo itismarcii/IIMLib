@@ -1,8 +1,11 @@
-﻿namespace IIMLib.Core.Module
+namespace IIMLib.Core.Module
 {
     public interface IModule
     {
-        public IModuleHolder Owner { get; set; }
-        public virtual void OnRemove(){}
+        IModuleHolder Owner { get; set; }
+
+        void OnRemove()
+        {
+        }
     }
 }

@@ -1,5 +1,6 @@
-﻿using System;
 using IIMLib.Core;
+using IIMLib.Core.Logger;
+using IIMLib.Core.Message;
 using UnityEngine;
 
 namespace IIMLib.Loop
@@ -7,75 +8,65 @@ namespace IIMLib.Loop
     [RequireComponent(typeof(LoadingScreenHandler))]
     public class GameManagerIIM : GameManagerIIMAbstract
     {
-        [field: SerializeField] public LogLevel LogLevel { get; protected set; } = LogLevel.Info;
-        [field: SerializeField] protected LoadingScreenHandler LoadingScreenHandler { get; private set;}
+        [SerializeField] private LogLevel _logLevel = LogLevel.Info;
+        [SerializeField] private LoadingScreenHandler _loadingScreenHandler;
 
-        protected static IGameLoopService<GameLoopType> LoopService;
-        public virtual bool IsPaused { get; protected set; }
-        public float FixedDeltaTime { get; private set; }
+        public static IGameLoopService<GameManagerIIM> LoopService { get; private set; }
+
+        public bool Initialized { get; private set; }
         public float DeltaTime { get; private set; }
-        
-        protected override void Init()
+        public float FixedDeltaTime { get; private set; }
+
+        public LoadingScreenHandler LoadingScreenHandler => _loadingScreenHandler;
+
+        protected override void InitializeServices()
         {
-            try
+            if (ServiceConfig == null)
             {
-                ServiceLocator.Initialize(ServiceConfig);
-                ServiceLocator.Get<ILoggerService>().SetLogLevel(LogLevel);
-                LoopService = ServiceLocator.Get<IGameLoopService<GameLoopType>>();
-                Initialized = enabled = LoopService != null;
-                ServiceLocator.Get<IMessageService>().Publish(new ServicesInitializedMessage());
+                Debug.LogError($"{nameof(GameManagerIIM)} requires a ServiceConfig implementing {nameof(IServiceConfig)}.");
+                enabled = false;
+                return;
             }
-            catch (Exception e)
-            {
-                enabled = Initialized = false;
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-        
-        public void OnValidate()
-        {
-            LoadingScreenHandler ??= GetComponent<LoadingScreenHandler>();
-            AfterValidate();
+
+            ServiceLocator.Initialize(ServiceConfig);
+
+            if (ServiceLocator.TryGet<ILoggerService>(out var logger))
+                logger.SetLogLevel(_logLevel);
+
+            ServiceLocator.TryGet(out IGameLoopService<GameManagerIIM> loopService);
+            LoopService = loopService;
+
+            Initialized = LoopService != null;
+            enabled = Initialized;
+
+            if (ServiceLocator.TryGet<IMessageService>(out var messageService))
+                messageService.Publish(new ServicesInitializedMessage());
         }
 
         private void Update()
         {
-            if(IsPaused) return;
-            
+            if (!Initialized)
+                return;
+
             DeltaTime = Time.deltaTime;
-            
-            BeforeUpdate();
             LoopService.Update(this, DeltaTime);
-            AfterUpdate();
         }
 
         private void FixedUpdate()
         {
-            if(IsPaused) return;
+            if (!Initialized)
+                return;
 
-            FixedDeltaTime = Time.fixedTime;
-            
-            BeforeFixedUpdate();
+            FixedDeltaTime = Time.fixedDeltaTime;
             LoopService.FixedUpdate(this, FixedDeltaTime);
-            AfterFixedUpdate();
         }
-        
+
         private void LateUpdate()
         {
-            if(IsPaused) return;
-            
-            BeforeLateUpdate();
-            LoopService.LateUpdate(this, DeltaTime);
-            AfterLateUpdate();
-        }
+            if (!Initialized)
+                return;
 
-        protected virtual void AfterValidate() { }
-        protected virtual void BeforeUpdate() { }
-        protected virtual void AfterUpdate() { }
-        protected virtual void BeforeFixedUpdate() { }
-        protected virtual void AfterFixedUpdate() { }
-        protected virtual void BeforeLateUpdate() { }
-        protected virtual void AfterLateUpdate() { }
+            LoopService.LateUpdate(this, Time.deltaTime);
+        }
     }
 }

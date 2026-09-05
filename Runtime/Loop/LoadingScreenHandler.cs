@@ -1,75 +1,94 @@
-﻿using System;
+using System;
 using System.Collections;
-using IIMLib.Core;
-using IIMLib.Loop.Message;
+using IIMLib.Core.Message;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace IIMLib.Loop
 {
-    public class LoadingScreenHandler : MonoBehaviour, ILoadingScreenHandler
+    public sealed class LoadingScreenHandler : MonoBehaviour, ILoadingScreenHandler
     {
-        [field: SerializeField] public Canvas LoadingCanvas { get; private set; }
-
-        [field: SerializeField] public Slider LoadingBar { get; private set; }
-
-        [field: SerializeField] public TMP_Text LoadingText { get; private set; }
-
-        [field: SerializeField] public TMP_Text TooltipText { get; private set; }
+        [SerializeField] private Canvas _loadingCanvas;
+        [SerializeField] private Slider _loadingSlider;
+        [SerializeField] private TMP_Text _loadingText;
+        [SerializeField] private TMP_Text _tooltipText;
 
         public bool IsLoading { get; private set; }
+        public Canvas LoadingCanvas => _loadingCanvas;
+        public Slider LoadingSlider => _loadingSlider;
+        public TMP_Text LoadingText => _loadingText;
+        public TMP_Text TooltipText => _tooltipText;
 
-        public void InitializeLoadingScreen(Func<IEnumerator> loadingFunc, Delegate finished = null)
+        public void Initialize(
+            Func<IEnumerator> loadingFunc,
+            Action finished = null,
+            float loadingTextInterval = 0.5f,
+            float tooltipInterval = 4f,
+            params string[] tooltips)
         {
-            if (IsLoading) return;
+            if (loadingFunc == null)
+                throw new ArgumentNullException(nameof(loadingFunc));
 
-            IsLoading = true;
-            LoadingCanvas.gameObject.SetActive(true);
-
-            StartCoroutine(ProcessLoadingScreenFunction(loadingFunc, null, 0, finished));
+            StopAllCoroutines();
+            StartCoroutine(Process(loadingFunc, finished, loadingTextInterval, tooltipInterval, tooltips));
         }
 
-        public void InitializeLoadingScreen(Func<IEnumerator> loadingFunc, in string[] tooltips, in float time = 3, Delegate finished = null)
+        private IEnumerator Process(
+            Func<IEnumerator> loadingFunc,
+            Action finished,
+            float loadingTextInterval,
+            float tooltipInterval,
+            string[] tooltips)
         {
-            if (IsLoading) return;
-
             IsLoading = true;
-            LoadingCanvas.gameObject.SetActive(true);
 
-            StartCoroutine(ProcessLoadingScreenFunction(loadingFunc, tooltips, time, finished));
-        }
+            if (_loadingCanvas != null)
+                _loadingCanvas.gameObject.SetActive(true);
 
-        public IEnumerator ProcessLoadingScreenFunction(Func<IEnumerator> loadingFunc, string[] tooltips,
-            float time = 0, Delegate finished = null)
-        {
-            var loadingTextCoroutine = StartCoroutine(((ILoadingScreenHandler) this).UpdateLoadingText());
-            var loadingTooltipTextCoroutine =
-                StartCoroutine(((ILoadingScreenHandler) this).UpdateLoadingTooltipText(tooltips, time));
+            if (_loadingSlider != null)
+                _loadingSlider.value = 0f;
 
-            yield return StartCoroutine(TrackProgress(loadingFunc()));
+            StartCoroutine(((ILoadingScreenHandler)this).UpdateLoadingText(loadingTextInterval));
+            StartCoroutine(((ILoadingScreenHandler)this).UpdateLoadingTooltipText(tooltipInterval, tooltips));
+
+            yield return TrackProgress(loadingFunc());
 
             IsLoading = false;
 
-            StopCoroutine(loadingTextCoroutine);
-            StopCoroutine(loadingTooltipTextCoroutine);
-            LoadingCanvas.gameObject.SetActive(false);
-            finished?.DynamicInvoke();
-            ServiceLocator.Get<IMessageService>().Publish(new OnLoadFinishedMessage());
+            if (_loadingSlider != null)
+                _loadingSlider.value = 1f;
+
+            if (_loadingCanvas != null)
+                _loadingCanvas.gameObject.SetActive(false);
+
+            finished?.Invoke();
+
+            if (IIMLib.Core.ServiceLocator.TryGet<IMessageService>(out var messageService))
+                messageService.Publish(new Message.OnLoadFinishedMessage());
         }
 
-        public IEnumerator TrackProgress(IEnumerator loadingFunc)
+        private IEnumerator TrackProgress(IEnumerator loading)
         {
-            while (loadingFunc.MoveNext())
+            if (loading == null)
+                yield break;
+
+            while (loading.MoveNext())
             {
-                LoadingBar.value = loadingFunc.Current switch
+                switch (loading.Current)
                 {
-                    float currentProgressSingle => Mathf.Clamp((int)currentProgressSingle, 0,100),
-                    int currentProgressInt => Mathf.Clamp(currentProgressInt, 0, 100),
-                    _ => LoadingBar.value
-                };
-            
-                yield return null;
+                    case float currentProgressSingle:
+                        if (_loadingSlider != null)
+                            _loadingSlider.value = Mathf.Clamp01(currentProgressSingle);
+                        break;
+
+                    case double currentProgressDouble:
+                        if (_loadingSlider != null)
+                            _loadingSlider.value = Mathf.Clamp01((float)currentProgressDouble);
+                        break;
+                }
+
+                yield return loading.Current;
             }
         }
     }

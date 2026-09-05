@@ -1,13 +1,13 @@
-﻿namespace IIMLib.Core
+namespace IIMLib.Core.Logger
 {
     public interface ILoggerService : IService
     {
-        void Log(in string message);
-        void LogVerbose(in string message);
-        void LogWarning(in string message);
-        void LogError(in string message);
-        void LogFatal(in string message);
-        void SetLogLevel(in LogLevel level);
-        void SetLoggerFilePath(in string filePath);
+        void Log(string message);
+        void LogVerbose(string message);
+        void LogWarning(string message);
+        void LogError(string message);
+        void LogFatal(string message);
+        void SetLogLevel(LogLevel logLevel);
+        void SetLoggerFilePath(string filePath);
     }
 }

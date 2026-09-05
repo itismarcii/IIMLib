@@ -1,53 +1,76 @@
-﻿using System;
-using IIMLib.Extension.TypeHierarchy;
+using System;
+using System.Linq;
+using IIMLib.Core.TypeHierarchy;
 
 namespace IIMLib.Core.Module
 {
     public static class ModuleExtension
     {
-        public static void AddModule<T>(this IModuleHolder moduleHolder, T module, bool checkForDuplication = true) where T : class, IModule => moduleHolder.AddModule(module, checkForDuplication);
-        public static void RemoveModule<T>(this IModuleHolder moduleHolder, bool removeAbsolute = true) where T : class, IModule => moduleHolder.RemoveModule<T>(removeAbsolute);
-        
-        public static bool TryGetModule<T>(this IModuleHolder moduleHolder, out T module, bool directSearch = false) where T : class, IModule
+        public static T AddModule<T>(this IModuleHolder holder, T module) where T : class, IModule
         {
-            module = moduleHolder.GetModule<T>(directSearch);
-            return module != null;
-        }
-        
-        public static T GetModule<T>(this IModuleHolder holder, bool directSearch = false) where T : class, IModule
-        {
-            var targetType = typeof(T);
+            if (holder == null)
+                throw new ArgumentNullException(nameof(holder));
 
-            foreach (var module in holder.Modules)
-            {
-                var moduleType = module.GetType();
-
-                if (directSearch)
-                {
-                    if(moduleType == targetType) return module as T;
-                }
-                else
-                {
-                    if(IsAssignableTo(module.GetType(), targetType)) return module as T;
-                }
-                
-            }
-
-            return null;
+            holder.AddModule(module);
+            return module;
         }
 
-        public static bool IsAssignableTo(Type type, Type targetBase)
+        public static bool RemoveModule<T>(this IModuleHolder holder) where T : class, IModule
         {
-            if (type == targetBase) return true;
+            if (holder == null)
+                throw new ArgumentNullException(nameof(holder));
 
-            var baseTypes = TypeHierarchyCache.GetBaseTypes(type);
+            if (!holder.TryGetModule<T>(out var module))
+                return false;
 
-            foreach (var baseType in baseTypes)
+            holder.RemoveModule(module);
+            return true;
+        }
+
+        public static bool TryGetModule<T>(this IModuleHolder holder, out T module) where T : class, IModule
+        {
+            if (holder == null)
+                throw new ArgumentNullException(nameof(holder));
+
+            var requestedType = typeof(T);
+            var modules = holder.Modules;
+
+            for (var i = 0; i < modules.Count; i++)
             {
-                if (targetBase == baseType) return true;
+                var candidate = modules[i];
+                if (candidate is T typed)
+                {
+                    module = typed;
+                    return true;
+                }
+
+                if (IsAssignableTo(candidate.GetType(), requestedType))
+                {
+                    module = candidate as T;
+                    if (module != null)
+                        return true;
+                }
             }
-            
-            return targetBase.IsInterface && targetBase.IsAssignableFrom(type);
+
+            module = null;
+            return false;
+        }
+
+        public static T GetModule<T>(this IModuleHolder holder) where T : class, IModule
+        {
+            if (holder.TryGetModule<T>(out var module))
+                return module;
+
+            throw new InvalidOperationException($"Module '{typeof(T).FullName}' is not attached.");
+        }
+
+        private static bool IsAssignableTo(Type candidateType, Type requestedType)
+        {
+            if (requestedType.IsAssignableFrom(candidateType))
+                return true;
+
+            return TypeHierarchyCache.GetBaseTypes(candidateType).Contains(requestedType) ||
+                   TypeHierarchyCache.GetDerivedTypes(candidateType).Contains(requestedType);
         }
     }
 }

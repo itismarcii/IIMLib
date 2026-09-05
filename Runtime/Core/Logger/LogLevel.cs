@@ -1,15 +1,12 @@
-﻿using System;
-
-namespace IIMLib.Core
+namespace IIMLib.Core.Logger
 {
-    [Serializable]
     public enum LogLevel
     {
-        None,
-        Verbose,
-        Info,
-        Warning,
-        Error,
-        Fatal,
+        None = 0,
+        Verbose = 1,
+        Info = 2,
+        Warning = 3,
+        Error = 4,
+        Fatal = 5
     }
 }

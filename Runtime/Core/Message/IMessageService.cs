@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 
-namespace IIMLib.Core
+namespace IIMLib.Core.Message
 {
     public interface IMessageService : IService
     {
-        public void Subscribe<T>(in Action<T> message) where T : struct, IMessage;
-        public void Unsubscribe<T>(in Action<T> message) where T : struct, IMessage;
-        public void Publish<T>(T message) where T : struct, IMessage;
+        void Subscribe<T>(in Action<T> message) where T : struct, IMessage;
+        void UnSubscribe<T>(in Action<T> message) where T : struct, IMessage;
+        void Publish<T>(in T message) where T : struct, IMessage;
     }
 }

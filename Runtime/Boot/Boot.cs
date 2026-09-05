@@ -1,4 +1,3 @@
-﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -8,105 +7,77 @@ namespace IIMLib.Boot.Runtime
 {
     public static class Boot
     {
-        public static bool Initialized { get; private set; }
+        private const string RuntimeAsset = "BootSettings_Runtime";
+        private const string EditorAsset = "BootSettings_Editor";
 
         private static AsyncOperationHandle<BootSettings> _runtimeBootSettingsHandle;
         private static AsyncOperationHandle<BootSettings> _editorBootSettingsHandle;
 
-        private static readonly string RuntimeAsset = $"{nameof(Runtime.BootSettings)}_Runtime";
-        private static readonly string EditorAsset = $"{nameof(BootSettings)}_Editor";
-        
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
         private static void Initialize()
         {
-            Application.quitting += ApplicationUnload;
+            Application.quitting -= Cleanup;
+            Application.quitting += Cleanup;
 
-            Init();
+#if UNITY_EDITOR
+            _runtimeBootSettingsHandle = InitializeBootSettingsAssetSync(RuntimeAsset);
+            _editorBootSettingsHandle = InitializeBootSettingsAssetSync(EditorAsset);
+#else
+            _ = InitializePlayerAsync();
+#endif
         }
 
-        private static void Init()
+        private static async Task InitializePlayerAsync()
         {
-            if (Application.isEditor)
-                InitializeBootSettingSync();
-            else
-                _ = InitializeBootSettings();
-        }
-
-        private static void ApplicationUnload()
-        {
-            Application.quitting -= ApplicationUnload;
-            DeInit();
-        }
-
-        private static void DeInit()
-        {
-            Cleanup(_runtimeBootSettingsHandle);
-            Cleanup(_editorBootSettingsHandle);
-            Initialized = false;
-        }
-
-        private static async Task InitializeBootSettings()
-        {
-            await LoadBootSettings();
-            Initialized = true;
-        }
-
-        private static void InitializeBootSettingSync()
-        {
-            LoadBootSettingsSync();
-            Initialized = true;
-        }
-
-        private static async Task LoadBootSettings()
-        {
-            if (Application.isEditor)
-            {
-                _editorBootSettingsHandle = await InitialiseBootSettingsAsset(EditorAsset);
-            }
-            
             _runtimeBootSettingsHandle = await InitialiseBootSettingsAsset(RuntimeAsset);
         }
 
-        private static void LoadBootSettingsSync()
+        private static async Task<AsyncOperationHandle<BootSettings>> InitialiseBootSettingsAsset(string address)
         {
-            if (Application.isEditor) _editorBootSettingsHandle = InitialiseBootSettingsAssetSync(EditorAsset);
-
-            _runtimeBootSettingsHandle = InitialiseBootSettingsAssetSync(RuntimeAsset);
-        }
-
-        private static async Task<AsyncOperationHandle<BootSettings>> InitialiseBootSettingsAsset(string key)
-        {
-            var handle = Addressables.LoadAssetAsync<BootSettings>(key);
+            var handle = Addressables.LoadAssetAsync<BootSettings>(address);
             await handle.Task;
 
-            switch (handle.Status)
+            if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
             {
-                case AsyncOperationStatus.Succeeded:
-                    await handle.Result.Initialise();
-                    break;
-                case AsyncOperationStatus.Failed:
-                    Debug.LogError(handle.OperationException);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                Debug.LogError($"Failed to load boot settings at address '{address}'.");
+                return handle;
             }
 
+            await handle.Result.Initialise();
             return handle;
         }
 
-        private static AsyncOperationHandle<BootSettings> InitialiseBootSettingsAssetSync(string key)
+        private static AsyncOperationHandle<BootSettings> InitializeBootSettingsAssetSync(string address)
         {
-            var handle = Addressables.LoadAssetAsync<BootSettings>(key);
+            var handle = Addressables.LoadAssetAsync<BootSettings>(address);
             var result = handle.WaitForCompletion();
+
+            if (handle.Status != AsyncOperationStatus.Succeeded || result == null)
+            {
+                Debug.LogWarning($"Boot settings at address '{address}' could not be loaded.");
+                return handle;
+            }
+
             result.InitializeSync();
             return handle;
         }
 
-        private static void Cleanup(AsyncOperationHandle<BootSettings> handle)
+        private static void Cleanup()
         {
-            if(!handle.IsValid()) return;
-            handle.Result.Cleanup();
+            CleanupHandle(ref _runtimeBootSettingsHandle);
+            CleanupHandle(ref _editorBootSettingsHandle);
+        }
+
+        private static void CleanupHandle(ref AsyncOperationHandle<BootSettings> handle)
+        {
+            if (!handle.IsValid())
+                return;
+
+            if (handle.Result != null)
+                handle.Result.Cleanup();
+
             Addressables.Release(handle);
+            handle = default;
         }
     }
 }

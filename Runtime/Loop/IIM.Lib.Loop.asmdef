@@ -1,0 +1,19 @@
+{
+  "name": "IIM.Lib.Loop",
+  "rootNamespace": "IIMLib.Loop",
+  "references": [
+    "IIM.Lib.Core",
+    "IIM.Lib.Boot",
+    "Unity.TextMeshPro",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

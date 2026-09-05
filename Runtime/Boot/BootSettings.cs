@@ -1,127 +1,146 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace IIMLib.Boot.Runtime
 {
-    public class BootSettings : ScriptableObject
+    [CreateAssetMenu(menuName = "IIM/Boot/Boot Settings", fileName = "BootSettings")]
+    public sealed class BootSettings : ScriptableObject
     {
-        private const string CLONE_SUFFIX = "(Clone)";
-        
         [SerializeField] public GameObject[] Standalone = Array.Empty<GameObject>();
-        [SerializeField, Space(10)] public GameObject[] Container = Array.Empty<GameObject>();
-        
-        private GameObject[] _Instances { get; set; }
-        private GameObject _RuntimeContainer { get; set; }
+        [SerializeField] public GameObject[] Container = Array.Empty<GameObject>();
+
+        private GameObject[] _instances;
+        private GameObject _runtimeContainer;
 
         public async Task Initialise()
         {
-            if (Container.Length > 0)
-            {
-                _RuntimeContainer = new GameObject($"{name}_Container");
-                DontDestroyOnLoad(_RuntimeContainer);
-            }
-            
-            _Instances = new GameObject[Standalone.Length + Container.Length];
+            EnsureRuntimeContainer();
 
-            for (var i = 0; i < Standalone.Length; i++)
+            var standaloneCount = Standalone?.Length ?? 0;
+            var containerCount = Container?.Length ?? 0;
+            _instances = new GameObject[standaloneCount + containerCount];
+
+            var index = 0;
+
+            for (var i = 0; i < standaloneCount; i++)
             {
-                if(!Standalone[i]) 
+                var prefab = Standalone[i];
+                if (prefab == null)
                 {
-#if UNITY_EDITOR
-                    Debug.LogWarning($"[{name}] Entity at index {i} is null.");
-#endif 
+                    Debug.LogWarning($"{name}: Standalone boot prefab at index {i} is null.");
+                    index++;
                     continue;
                 }
 
-                var instance = InstantiateAsync(Standalone[i]);
-                
-                while (!instance.isDone) await Task.Yield();
-                
-                instance.Result[0].name = Standalone[i].name;
-                _Instances[i] = instance.Result[0];
+                // Unity 2022.3 has Object.Instantiate, not Object.InstantiateAsync.
+                // Instantiation stays on Unity's main thread; yielding between entries
+                // keeps this API asynchronous without touching the thread pool.
+                var instance = Instantiate(prefab);
+                instance.name = prefab.name;
+                _instances[index++] = instance;
+                InitializeBootComponent(instance);
+
+                await Task.Yield();
             }
-            
-            for (var i = 0; i < Container.Length; i++)
+
+            for (var i = 0; i < containerCount; i++)
             {
-                if(!Container[i]) 
+                var prefab = Container[i];
+                if (prefab == null)
                 {
-#if UNITY_EDITOR
-                    Debug.LogWarning($"[{name}] Container Entity at index {i} is null.");
-#endif
+                    Debug.LogWarning($"{name}: Container boot prefab at index {i} is null.");
+                    index++;
                     continue;
                 }
 
-                var instance = InstantiateAsync(Container[i], _RuntimeContainer.transform);
-                
-                while (!instance.isDone) await Task.Yield();
-                
-                instance.Result[0].name = Standalone[i].name;
-                _Instances[Standalone.Length + i] = instance.Result[0];
+                var instance = Instantiate(prefab, _runtimeContainer.transform);
+                instance.name = prefab.name;
+                _instances[index++] = instance;
+                InitializeBootComponent(instance);
+
+                await Task.Yield();
             }
         }
 
         public void InitializeSync()
         {
-            if (Container.Length > 0)
-            {
-                _RuntimeContainer = new GameObject($"{name}_Container");
-                if (Application.isPlaying) DontDestroyOnLoad(_RuntimeContainer);
-            }            
+            EnsureRuntimeContainer();
 
-            _Instances = new GameObject[Standalone.Length + Container.Length];
-            
-            for (var i = 0; i < Standalone.Length; i++)
+            var standaloneCount = Standalone?.Length ?? 0;
+            var containerCount = Container?.Length ?? 0;
+            _instances = new GameObject[standaloneCount + containerCount];
+
+            var index = 0;
+
+            for (var i = 0; i < standaloneCount; i++)
             {
-                if (!Standalone[i]) 
+                var prefab = Standalone[i];
+                if (prefab == null)
                 {
-#if UNITY_EDITOR
-                    Debug.LogWarning($"[{name}] Entity at index {i} is null.");
-#endif                    
+                    Debug.LogWarning($"{name}: Standalone boot prefab at index {i} is null.");
+                    index++;
                     continue;
                 }
-                
-                var instance = Instantiate(Standalone[i]);
-                instance.name = Standalone[i].name;
-                _Instances[i] = instance;
 
-                if(instance.TryGetComponent(out IBoot boot)) boot.Initialize();
-                Debug.Log($"{Standalone[i].name} initialized");
+                var instance = Instantiate(prefab);
+                instance.name = prefab.name;
+                _instances[index++] = instance;
+                InitializeBootComponent(instance);
             }
-            
-            for (var i = 0; i < Container.Length; i++)
+
+            for (var i = 0; i < containerCount; i++)
             {
-                if (!Container[i])
+                var prefab = Container[i];
+                if (prefab == null)
                 {
-#if UNITY_EDITOR
-                    Debug.LogWarning($"[{name}] Container Entity at index {i} is null.");
-#endif
+                    Debug.LogWarning($"{name}: Container boot prefab at index {i} is null.");
+                    index++;
                     continue;
                 }
-                
-                var instance = Instantiate(Container[i], _RuntimeContainer.transform);
-                instance.name = Standalone[i].name;
-                _Instances[Standalone.Length + i] = instance;
 
-                if(instance.TryGetComponent(out IBoot boot)) boot.Initialize();
-                Debug.Log($"{Standalone[i].name} initialized");
+                var instance = Instantiate(prefab, _runtimeContainer.transform);
+                instance.name = prefab.name;
+                _instances[index++] = instance;
+                InitializeBootComponent(instance);
             }
         }
 
         public void Cleanup()
         {
-            foreach (var instance in _Instances)
+            if (_instances != null)
             {
-                if(!instance) continue;
-                
-                if(Application.isPlaying) Destroy(instance);
-                else DestroyImmediate(instance);
+                for (var i = 0; i < _instances.Length; i++)
+                {
+                    if (_instances[i] != null)
+                        Destroy(_instances[i]);
+                }
+
+                _instances = null;
             }
-            
-            _Instances = null;
-            
-            if(Application.isPlaying) Destroy(_RuntimeContainer);
-            else DestroyImmediate(_RuntimeContainer);
+
+            if (_runtimeContainer != null)
+            {
+                Destroy(_runtimeContainer);
+                _runtimeContainer = null;
+            }
+        }
+
+        private void EnsureRuntimeContainer()
+        {
+            if (_runtimeContainer != null || Container == null || Container.Length == 0)
+                return;
+
+            _runtimeContainer = new GameObject($"{name}_Container");
+
+            if (Application.isPlaying)
+                DontDestroyOnLoad(_runtimeContainer);
+        }
+
+        private static void InitializeBootComponent(GameObject instance)
+        {
+            if (instance.TryGetComponent<IBoot>(out var boot))
+                boot.Initialize();
         }
     }
 }

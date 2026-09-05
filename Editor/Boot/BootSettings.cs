@@ -1,21 +1,22 @@
-﻿using UnityEngine;
-using UnityEngine.AddressableAssets;
+using UnityEngine;
 
 namespace IIMLib.Boot.Editor
 {
-    /// <summary>
-    /// A scriptable object used to store references to CustomBoot settings for both Runtime and Editor.
-    /// </summary>
-    public class BootSettings : ScriptableObject
+    public sealed class BootSettings : ScriptableObject
     {
-        /// <summary>
-        /// The Addressables reference for the runtime only settings
-        /// </summary>
-        public AssetReference RuntimeSettings;
-        
-        /// <summary>
-        /// The Addressables reference for the editor only settings
-        /// </summary>
-        public AssetReference EditorSettings;
+        [SerializeField] private Runtime.BootSettings _runtimeSettings;
+        [SerializeField] private Runtime.BootSettings _editorSettings;
+
+        public Runtime.BootSettings RuntimeSettings
+        {
+            get => _runtimeSettings;
+            set => _runtimeSettings = value;
+        }
+
+        public Runtime.BootSettings EditorSettings
+        {
+            get => _editorSettings;
+            set => _editorSettings = value;
+        }
     }
 }

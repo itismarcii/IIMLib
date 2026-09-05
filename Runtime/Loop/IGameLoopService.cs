@@ -1,19 +1,17 @@
-﻿using System;
+using System;
 using IIMLib.Core;
 
 namespace IIMLib.Loop
 {
-    public interface IGameLoopService<in T> : IService where T : Enum
+    public interface IGameLoopService<T> : IService
     {
-        public void Subscribe(object subscriber, Action<float> action, T type);
-        public void UnSubscribe(object subscriber, T type);
-        public void UnSubscribe(object subscriber);
-        public void PauseUpdate(object subscriber);
-        public void PauseUpdate(object subscriber, T type);
-        public void ResumeUpdate(object subscriber);
-        public void ResumeUpdate(object subscriber,T type);
-        public void Update(object updater, float deltaTime);
-        public void FixedUpdate(object updater, float deltaTime);
-        public void LateUpdate(object updater, float deltaTime);
+        void Subscribe(object subscriber, Action<float> action, GameLoopType gameLoopType);
+        void UnSubscribe(object subscriber, GameLoopType gameLoopType);
+        void UnSubscribe(object subscriber);
+        void Pause(object subscriber);
+        void Resume(object subscriber);
+        void Update(T updater, float deltaTime);
+        void FixedUpdate(T updater, float fixedDeltaTime);
+        void LateUpdate(T updater, float deltaTime);
     }
 }

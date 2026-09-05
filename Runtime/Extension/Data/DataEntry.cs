@@ -1,20 +1,14 @@
-﻿using System;
-
 namespace IIMLib.Extension.Data
 {
-    public abstract class DataEntry<T> : IDataEntry where T : DataEntry<T>
+    public abstract class DataEntry<T> : IDataEntry where T : DataEntry<T>, new()
     {
-        public abstract void Merge(T data);
-        public abstract T CreateCleanDataEntry();
-        public abstract T Clone();
-
-        void IDataEntry.MergeFrom(IDataEntry entry)
+        public virtual IDataEntry Clone()
         {
-            if(entry is not T typeData) throw new InvalidOperationException($"Cannot merge {entry.GetType().Name} into {typeof(T).Name}");
-            
-            Merge(typeData);
+            var result = new T();
+            result.Override(this);
+            return result;
         }
 
-        IDataEntry IDataEntry.CloneUntyped() => Clone();
+        public abstract void Override(IDataEntry source);
     }
 }

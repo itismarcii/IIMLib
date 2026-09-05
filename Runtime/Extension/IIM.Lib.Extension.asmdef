@@ -1,11 +1,7 @@
 {
-    "name": "IIM.Lib.Editor",
+    "name": "IIM.Lib.Extension",
     "rootNamespace": "",
-    "references": [
-        "IIM.Lib.Runtime",
-        "Unity.Addressables",
-        "Unity.Addressables.Editor"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

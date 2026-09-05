@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using IIMLib.Core;
@@ -10,63 +9,46 @@ namespace IIMLib.Loop
 {
     public interface ILoadingScreenHandler
     {
-        private const string LOADING_DEFAULT_TEXT = "LOADING";
-        
-        public Canvas LoadingCanvas { get; }
-        public Slider LoadingBar { get; }
-        public TMP_Text LoadingText { get; }
-        public TMP_Text TooltipText { get; }
-        public bool IsLoading { get; }
-        
-        public void InitializeLoadingScreen(Func<IEnumerator> loadingFunc, Delegate finished = null);
+        bool IsLoading { get; }
 
-        public void InitializeLoadingScreen(Func<IEnumerator> loadingFunc, in string[] tooltips, in float time = 3f,
-            Delegate finished = null);
+        Canvas LoadingCanvas { get; }
+        Slider LoadingSlider { get; }
+        TMP_Text LoadingText { get; }
+        TMP_Text TooltipText { get; }
 
-        public IEnumerator ProcessLoadingScreenFunction(Func<IEnumerator> loadingFunc, string[] tooltips,
-            float time = 0, Delegate finished = null);
-        
-        public IEnumerator TrackProgress(IEnumerator loadingFunc);
-       
-        public IEnumerator UpdateLoadingText()
+        IEnumerator UpdateLoadingText(float time)
         {
-            var wait = new WaitForSeconds(1f);
+            if (LoadingText == null || time <= 0f)
+                yield break;
+
             var dotCount = 0;
-        
+
             while (IsLoading)
             {
-                var dotString = LOADING_DEFAULT_TEXT;
-
-                for (var i = 0; i < dotCount; i++)
-                {
-                    dotString += ".";
-                }
-
-                LoadingText.text = dotString;
-                dotCount++;
-                yield return wait;
-
-                if (dotCount == 4)
-                {
-                    dotCount = 0;
-                }
+                LoadingText.text = $"LOADING{new string('.', dotCount)}";
+                dotCount = (dotCount + 1) % 4;
+                yield return new WaitForSecondsRealtime(time);
             }
 
-            LoadingText.text = "";
-        }    
-        
-        public IEnumerator UpdateLoadingTooltipText(string[] tooltips, float time)
+            LoadingText.text = string.Empty;
+        }
+
+        IEnumerator UpdateLoadingTooltipText(float time, params string[] tooltips)
         {
-            if(time <= 0) yield break;
-        
-            var wait = new WaitForSeconds(time);
-            var tooltipQueue = new Queue<string>(HelperCollection.Shuffle(tooltips));
+            if (TooltipText == null || time <= 0f || tooltips == null || tooltips.Length == 0)
+                yield break;
+
+            var shuffled = new List<string>(HelperCollection.Shuffle(tooltips));
+            var index = 0;
 
             while (IsLoading)
             {
-                TooltipText.text = tooltipQueue.Dequeue();
-                yield return wait;
+                TooltipText.text = shuffled[index];
+                index = (index + 1) % shuffled.Count;
+                yield return new WaitForSecondsRealtime(time);
             }
+
+            TooltipText.text = string.Empty;
         }
     }
 }

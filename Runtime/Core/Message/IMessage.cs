@@ -1,4 +1,6 @@
-﻿namespace IIMLib.Core
+namespace IIMLib.Core.Message
 {
-    public interface IMessage { }
+    public interface IMessage
+    {
+    }
 }

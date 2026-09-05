@@ -1,23 +1,22 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using IIMLib.Core;
+using IIMLib.Core.Logger;
+using IIMLib.Core.Message;
 using UnityEngine;
 
 namespace IIMLib.Loop
 {
-    [CreateAssetMenu(menuName = "IIM/Service/Base Config", fileName = "Base Service Config")]
-    public class ServiceConfigIIMAbstract : ScriptableObject, IServiceConfig
+    public abstract class ServiceConfigIIMAbstract : ScriptableObject, IServiceConfig
     {
-        public IEnumerable<(Type, IService)> ServiceList => GetServiceConfig();
-
-        protected virtual List<(Type, IService)> GetServiceConfig()
+        public virtual IEnumerable<(Type, IService)> ServiceList
         {
-            return new List<(Type, IService)>()
+            get
             {
-                (typeof(IGameLoopService<GameLoopType>), new GameLoopServiceIIM<GameManagerIIM>()),
-                (typeof(IMessageService), new MessageService()),
-                (typeof(ILoggerService), new LoggerService())
-            };
+                yield return (typeof(IGameLoopService<GameManagerIIM>), new GameLoopServiceIIM<GameManagerIIM>());
+                yield return (typeof(IMessageService), new MessageService());
+                yield return (typeof(ILoggerService), new LoggerService());
+            }
         }
     }
 }
