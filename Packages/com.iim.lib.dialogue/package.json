@@ -1,0 +1,24 @@
+{
+  "name": "com.iim.lib.dialogue",
+  "version": "0.0.1",
+  "displayName": "IIMLib Dialogue",
+  "description": "Optional dialogue system for IIMLib.",
+  "unity": "2022.3",
+  "documentationUrl": "https://github.com/itismarcii/IIMLib/tree/develop/monorepo/Packages/com.iim.lib.dialogue",
+  "changelogUrl": "https://github.com/itismarcii/IIMLib/blob/develop/monorepo/Packages/com.iim.lib.dialogue/CHANGELOG.md",
+  "dependencies": {
+    "com.iim.lib": "0.1.0"
+  },
+  "keywords": [
+    "iim",
+    "dialogue",
+    "conversation",
+    "narrative",
+    "logic",
+    "textexectution"
+  ],
+  "author": {
+    "name": "IIM",
+    "url": "https://github.com/itismarcii"
+  }
+}
