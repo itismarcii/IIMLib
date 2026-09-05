@@ -141,5 +141,71 @@ namespace IIMLib.Core
                 }
             }
         }
+        
+        public static T[] ToInterfaceArray<T>(object[] objects)
+            where T : class
+        {
+            if (objects == null)
+                return Array.Empty<T>();
+
+            var result = new T[objects.Length];
+
+            for (var i = 0; i < objects.Length; i++)
+            {
+                var obj = objects[i];
+
+                if (obj == null)
+                {
+                    result[i] = null;
+                    continue;
+                }
+
+                if (obj is not T value)
+                {
+                    throw new InvalidCastException(
+                        $"Object '{obj}' at index {i} does not implement " +
+                        $"'{typeof(T).FullName}'.");
+                }
+
+                result[i] = value;
+            }
+
+            return result;
+        }
+
+        public static bool TryToInterfaceArray<T>(
+            object[] objects,
+            out T[] result)
+            where T : class
+        {
+            if (objects == null)
+            {
+                result = Array.Empty<T>();
+                return true;
+            }
+
+            result = new T[objects.Length];
+
+            for (var i = 0; i < objects.Length; i++)
+            {
+                var obj = objects[i];
+
+                if (obj == null)
+                {
+                    result[i] = null;
+                    continue;
+                }
+
+                if (obj is not T value)
+                {
+                    result = null;
+                    return false;
+                }
+
+                result[i] = value;
+            }
+
+            return true;
+        }
     }
 }

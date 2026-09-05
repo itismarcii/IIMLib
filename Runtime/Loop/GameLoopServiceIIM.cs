@@ -25,6 +25,8 @@ namespace IIMLib.Loop
             public override int GetHashCode() => Action.GetHashCode();
         }
 
+        public string IdentifierName => "GameManager";
+
         private readonly Dictionary<object, HashSet<Subscriber>> _updateSubscribers = new();
         private readonly Dictionary<object, HashSet<Subscriber>> _fixedUpdateSubscribers = new();
         private readonly Dictionary<object, HashSet<Subscriber>> _lateUpdateSubscribers = new();
@@ -36,6 +38,7 @@ namespace IIMLib.Loop
         private bool _updateDirty = true;
         private bool _fixedUpdateDirty = true;
         private bool _lateUpdateDirty = true;
+        private string _ValidName;
 
         public void Initialize()
         {

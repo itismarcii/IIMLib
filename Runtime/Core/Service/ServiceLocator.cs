@@ -21,7 +21,8 @@ namespace IIMLib.Core
                 service.Initialize();
 
                 var progress = total == 0 ? 1f : (i + 1f) / total;
-                Debug.Log($"Service: {type.Name} initialized ({progress:P0}).");
+                var serviceName = string.IsNullOrEmpty(service.IdentifierName) ? type.Name : service.IdentifierName;
+                Debug.Log($"Service: {serviceName} initialized ({progress:P0}).");
             }
         }
 

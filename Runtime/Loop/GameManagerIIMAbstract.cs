@@ -9,7 +9,7 @@ namespace IIMLib.Loop
         public static GameManagerIIMAbstract Instance { get; private set; }
 
         [field: SerializeField, RequireInterface(typeof(IServiceConfig))]
-        protected UnityEngine.Object ServiceConfigObject { get; private set; }
+        protected Object ServiceConfigObject { get; private set; }
 
         protected IServiceConfig ServiceConfig => ServiceConfigObject as IServiceConfig;
 

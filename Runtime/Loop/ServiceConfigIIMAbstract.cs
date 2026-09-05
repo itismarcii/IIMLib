@@ -9,14 +9,13 @@ namespace IIMLib.Loop
 {
     public abstract class ServiceConfigIIMAbstract : ScriptableObject, IServiceConfig
     {
-        public virtual IEnumerable<(Type, IService)> ServiceList
+        public IEnumerable<(Type, IService)> ServiceList => GetList();
+
+        protected virtual IEnumerable<(Type, IService)> GetList()
         {
-            get
-            {
-                yield return (typeof(IGameLoopService<GameManagerIIM>), new GameLoopServiceIIM<GameManagerIIM>());
-                yield return (typeof(IMessageService), new MessageService());
-                yield return (typeof(ILoggerService), new LoggerService());
-            }
+            yield return (typeof(IGameLoopService<GameManagerIIM>), new GameLoopServiceIIM<GameManagerIIM>());
+            yield return (typeof(IMessageService), new MessageService());
+            yield return (typeof(ILoggerService), new LoggerService());
         }
     }
 }
